@@ -1,0 +1,535 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Perioperative CV Evaluation – ACC/AHA 2024 (with DASI, Presets, Export)</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 24px; line-height: 1.35; }
+  h1, h2 { margin: 0.4em 0; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+  .card { border: 1px solid #ddd; border-radius: 8px; padding: 16px; background: #fff; }
+  label { display:block; margin-top: 8px; font-weight:600; }
+  input[type="number"], select, input[type="text"] { width:100%; padding:8px; border:1px solid #bbb; border-radius:6px; }
+  .row { display:flex; gap:8px; align-items:center; margin:6px 0; flex-wrap: wrap; }
+  .muted { color:#666; font-size: 0.92em; }
+  .pill { display:inline-block; padding:3px 8px; border-radius:999px; border:1px solid #999; margin-right:6px; }
+  .btn { padding:10px 16px; border-radius:8px; border:1px solid #444; background:#f5f5f5; cursor:pointer; font-weight:600; }
+  .btn:active { transform: translateY(1px); }
+  .ok { border-left:5px solid #2e7d32; padding-left:10px; }
+  .warn { border-left:5px solid #ef6c00; padding-left:10px; }
+  .bad { border-left:5px solid #c62828; padding-left:10px; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+  .small { font-size: 0.9em; }
+  .section-title { margin-top: 18px; font-weight: 700; border-bottom: 1px dashed #ccc; padding-bottom: 6px; }
+  .two-col { display:grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  textarea { width:100%; min-height: 220px; padding:10px; border:1px solid #bbb; border-radius:6px; font-family: ui-monospace, Menlo, monospace; }
+  footer { margin-top: 24px; color:#666; font-size: 0.85em; }
+  ul { margin: 0.3em 0 0.6em 1.2em; }
+</style>
+</head>
+<body>
+  <h1>Perioperative CV Evaluation – ACC/AHA 2024</h1>
+  <div class="muted">Decision support for non‑cardiac surgery. Incorporates DASI→METs, surgical risk presets, and exportable clinical note. Use clinical judgment.</div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Patient & Surgery</h2>
+      <label>Age</label>
+      <input id="age" type="number" min="18" max="110" value="70">
+
+      <label>Urgency</label>
+      <select id="urgency">
+        <option value="elective" selected>Elective</option>
+        <option value="time-sensitive">Time-sensitive</option>
+        <option value="urgent-emergent">Urgent / Emergent</option>
+      </select>
+
+      <label>Surgery Profile Preset</label>
+      <select id="preset" onchange="applyPreset()">
+        <option value="">— Select preset —</option>
+        <option value="LC">Laparoscopic cholecystectomy (Intermediate)</option>
+        <option value="hernia">Inguinal hernia repair (Low)</option>
+        <option value="cataract">Cataract surgery (Low)</option>
+        <option value="endo">Endoscopy/colonoscopy (Low)</option>
+        <option value="breast">Breast surgery (Low)</option>
+        <option value="ortho">Total hip/knee arthroplasty (Intermediate)</option>
+        <option value="cea">Carotid endarterectomy (Intermediate)</option>
+        <option value="evAR">Endovascular AAA repair (Intermediate)</option>
+        <option value="intrathoracic">Major intrathoracic surgery (High)</option>
+        <option value="openAAA">Open abdominal aortic aneurysm repair (High)</option>
+        <option value="neuro">Intracranial neurosurgery (High)</option>
+      </select>
+
+      <label>Surgery Category (cardiac risk)</label>
+      <select id="surgRisk">
+        <option value="low">Low (&lt;1%)</option>
+        <option value="intermediate" selected>Intermediate (1–5%)</option>
+        <option value="high">High (&gt;5%)</option>
+      </select>
+
+      <label>Procedure Type (free text)</label>
+      <input id="procedure" type="text" placeholder="e.g., Laparoscopic cholecystectomy">
+    </div>
+
+    <div class="card">
+      <h2>Active Cardiac Conditions</h2>
+      <div class="small muted">If any present: deferrable surgery should be postponed and condition managed first.</div>
+      <div><label><input type="checkbox" id="acc-acs"> ACS / Unstable angina or recent MI</label></div>
+      <div><label><input type="checkbox" id="acc-decompHF"> Decompensated heart failure</label></div>
+      <div><label><input type="checkbox" id="acc-arr"> Significant/unstable arrhythmia</label></div>
+      <div><label><input type="checkbox" id="acc-valve"> Severe valvular disease (e.g., critical AS)</label></div>
+    </div>
+
+    <div class="card">
+      <h2>RCRI Factors (1 point each)</h2>
+      <div><label><input type="checkbox" id="r-ihd"> Ischemic heart disease (prior MI/angina/Q waves/PCI/CABG)</label></div>
+      <div><label><input type="checkbox" id="r-chf"> History of heart failure</label></div>
+      <div><label><input type="checkbox" id="r-cvd"> History of stroke/TIA</label></div>
+      <div><label><input type="checkbox" id="r-insulin"> Diabetes on insulin</label></div>
+      <div><label><input type="checkbox" id="r-cr2"> Creatinine &gt; 2.0 mg/dL (177 µmol/L)</label></div>
+      <div><label><input type="checkbox" id="r-highrisk"> High‑risk surgery (intraperitoneal/intrathoracic/major vascular with large shifts)</label></div>
+      <div class="row"><span class="pill mono">RCRI: <span id="rcri">0</span></span>
+        <span class="pill mono">Estimated MACE: <span id="mace">~0.4%</span></span></div>
+    </div>
+
+    <div class="card">
+      <h2>Functional Capacity</h2>
+      <div class="small muted">You may enter METs directly or compute from DASI below.</div>
+      <div class="row">
+        <div style="flex:1">
+          <label>Estimated METs</label>
+          <input id="mets" type="number" min="1" max="15" value="4" step="0.1">
+        </div>
+        <div style="flex:1">
+          <label>Use DASI-derived METs</label>
+          <select id="useDasi" onchange="toggleDasiUse()">
+            <option value="no" selected>No</option>
+            <option value="yes">Yes</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="section-title">DASI Questionnaire</div>
+      <div class="small muted">Check activities the patient can perform. DASI score = sum of item weights (max 58.2). METs ≈ (0.43×DASI + 9.6) / 3.5</div>
+      <div class="two-col">
+        <div><label><input type="checkbox" class="dasi" data-w="2.75"> Personal care (eat/dress/bathe/toilet)</label></div>
+        <div><label><input type="checkbox" class="dasi" data-w="1.75"> Walk indoors (around the house)</label></div>
+        <div><label><input type="checkbox" class="dasi" data-w="2.75"> Walk 1–2 blocks on level ground</label></div>
+        <div><label><input type="checkbox" class="dasi" data-w="5.50"> Climb a flight of stairs / walk up a hill</label></div>
+        <div><label><input type="checkbox" class="dasi" data-w="8.00"> Run a short distance</label></div>
+        <div><label><input type="checkbox" class="dasi" data-w="2.70"> Light housework (dusting, washing dishes)</label></div>
+        <div><label><input type="checkbox" class="dasi" data-w="3.50"> Moderate housework (vacuuming, carrying groceries)</label></div>
+        <div><label><input type="checkbox" class="dasi" data-w="8.00"> Heavy housework (scrubbing floors, moving furniture)</label></div>
+        <div><label><input type="checkbox" class="dasi" data-w="4.50"> Yardwork (raking, weeding, push mower)</label></div>
+        <div><label><input type="checkbox" class="dasi" data-w="5.25"> Sexual relations</label></div>
+        <div><label><input type="checkbox" class="dasi" data-w="6.00"> Moderate recreation (golf, bowling, dancing, doubles tennis)</label></div>
+        <div><label><input type="checkbox" class="dasi" data-w="7.50"> Strenuous sports (swimming, singles tennis, basketball, skiing)</label></div>
+      </div>
+      <div class="row">
+        <span class="pill mono">DASI: <span id="dasiScore">0.0</span></span>
+        <span class="pill mono">DASI→METs: <span id="dasiMets">~2.7</span></span>
+      </div>
+
+      <label>Symptoms (past 3 months)</label>
+      <div><label><input type="checkbox" id="sx-angina"> Angina</label></div>
+      <div><label><input type="checkbox" id="sx-dyspnea"> New/worsening dyspnea</label></div>
+      <div><label><input type="checkbox" id="sx-syncope"> Syncope/presyncope</label></div>
+    </div>
+
+    <div class="card">
+      <h2>Coronary Stents & Antithrombotics</h2>
+      <label>Prior PCI</label>
+      <select id="pci">
+        <option value="none" selected>No PCI</option>
+        <option value="bms">BMS</option>
+        <option value="des">DES</option>
+      </select>
+      <label>Time since PCI (months)</label>
+      <input id="pciMonths" type="number" min="0" max="240" value="24">
+      <label>Antiplatelet(s)</label>
+      <div class="two-col">
+        <div><label><input type="checkbox" id="med-aspirin"> Aspirin</label></div>
+        <div><label><input type="checkbox" id="med-clop"> Clopidogrel</label></div>
+        <div><label><input type="checkbox" id="med-tica"> Ticagrelor</label></div>
+        <div><label><input type="checkbox" id="med-pras"> Prasugrel</label></div>
+      </div>
+      <label>Anticoagulant</label>
+      <select id="ac">
+        <option value="none" selected>None</option>
+        <option value="warfarin">Warfarin</option>
+        <option value="apixaban">Apixaban</option>
+        <option value="rivaroxaban">Rivaroxaban</option>
+        <option value="dabigatran">Dabigatran</option>
+        <option value="edoxaban">Edoxaban</option>
+      </select>
+    </div>
+
+    <div class="card">
+      <h2>Chronic Medications</h2>
+      <div class="two-col">
+        <div><label><input type="checkbox" id="med-bb"> Beta‑blocker</label></div>
+        <div><label><input type="checkbox" id="med-acearb"> ACEI/ARB</label></div>
+        <div><label><input type="checkbox" id="med-statin"> Statin</label></div>
+        <div><label><input type="checkbox" id="med-ssri"> SSRI/SNRI/TCA</label></div>
+        <div><label><input type="checkbox" id="med-sglt2"> SGLT2 inhibitor</label></div>
+        <div><label><input type="checkbox" id="med-metformin"> Metformin</label></div>
+        <div><label><input type="checkbox" id="med-sulfonyl"> Sulfonylurea</label></div>
+        <div><label><input type="checkbox" id="med-basalins"> Basal insulin</label></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:16px">
+    <button class="btn" onclick="run()">Evaluate</button>
+    <button class="btn" onclick="resetAll()">Reset</button>
+    <button class="btn" onclick="exportNote()">Export Note</button>
+    <button class="btn" onclick="copyNote()">Copy Note</button>
+  </div>
+
+  <div id="output" class="card" style="margin-top:16px; display:none;"></div>
+
+  <div id="noteCard" class="card" style="margin-top:16px; display:none;">
+    <h2>Clinical Note (Preview)</h2>
+    <textarea id="note"></textarea>
+  </div>
+
+  <footer>
+    Mirrors key aspects of ACC/AHA 2024 perioperative guidance: active conditions, surgical risk, RCRI, functional capacity (with DASI), targeted testing, and med management. Use with clinical judgment.
+  </footer>
+
+<script>
+function val(id){ const el = document.getElementById(id); return (el.type==='checkbox') ? el.checked : el.value; }
+function setVal(id,v){ const el=document.getElementById(id); if(el){ if(el.type==='checkbox'){ el.checked=!!v; } else { el.value=v; } } }
+
+function applyPreset(){
+  const p = val('preset');
+  if(p==='LC'){ setVal('procedure','Laparoscopic cholecystectomy'); setVal('surgRisk','intermediate'); }
+  else if(p==='hernia'){ setVal('procedure','Inguinal hernia repair'); setVal('surgRisk','low'); }
+  else if(p==='cataract'){ setVal('procedure','Cataract surgery'); setVal('surgRisk','low'); }
+  else if(p==='endo'){ setVal('procedure','Endoscopy / Colonoscopy'); setVal('surgRisk','low'); }
+  else if(p==='breast'){ setVal('procedure','Breast surgery'); setVal('surgRisk','low'); }
+  else if(p==='ortho'){ setVal('procedure','Total hip/knee arthroplasty'); setVal('surgRisk','intermediate'); }
+  else if(p==='cea'){ setVal('procedure','Carotid endarterectomy'); setVal('surgRisk','intermediate'); }
+  else if(p==='evAR'){ setVal('procedure','Endovascular AAA repair'); setVal('surgRisk','intermediate'); }
+  else if(p==='intrathoracic'){ setVal('procedure','Major intrathoracic surgery'); setVal('surgRisk','high'); }
+  else if(p==='openAAA'){ setVal('procedure','Open AAA repair'); setVal('surgRisk','high'); }
+  else if(p==='neuro'){ setVal('procedure','Intracranial neurosurgery'); setVal('surgRisk','high'); }
+}
+
+function rcriScore(){
+  let s=0;
+  if(val('r-ihd')) s++;
+  if(val('r-chf')) s++;
+  if(val('r-cvd')) s++;
+  if(val('r-insulin')) s++;
+  if(val('r-cr2')) s++;
+  if(val('r-highrisk')) s++;
+  return s;
+}
+
+function maceEstimate(score){
+  if(score<=0) return "~0.4%";
+  if(score==1) return "~1.0%";
+  if(score==2) return "~6–7%";
+  return ">11%";
+}
+
+function dasiCalc(){
+  let total = 0.0;
+  document.querySelectorAll('.dasi').forEach(cb=>{
+    if(cb.checked){ total += parseFloat(cb.dataset.w); }
+  });
+  const mets = (0.43*total + 9.6)/3.5;
+  document.getElementById('dasiScore').innerText = total.toFixed(1);
+  document.getElementById('dasiMets').innerText = mets.toFixed(1);
+  return {dasi: total, mets: mets};
+}
+
+function toggleDasiUse(){
+  const use = val('useDasi')==='yes';
+  if(use){
+    const r = dasiCalc();
+    setVal('mets', r.mets.toFixed(1));
+  }
+}
+
+document.querySelectorAll('.dasi').forEach(cb=>{
+  cb.addEventListener('change', ()=>{
+    const r = dasiCalc();
+    if(val('useDasi')==='yes'){
+      setVal('mets', r.mets.toFixed(1));
+    }
+  });
+});
+
+function manageAntiplatelet(){
+  const pci = val('pci');
+  const months = parseInt(val('pciMonths'),10) || 0;
+  const asp = val('med-aspirin');
+  const clop = val('med-clop');
+  const tica = val('med-tica');
+  const pras = val('med-pras');
+  let rec = [];
+
+  if(pci!=='none'){
+    if((pci==='bms' && months<1) || (pci==='des' && months<3)){
+      rec.push("Elective surgery should ideally be deferred until minimum recommended interval post‑stent (BMS ≥30 days; DES ≥3 months) unless benefit outweighs risk.");
+    } else {
+      rec.push("Surgery timing after PCI appears acceptable based on entered interval.");
+    }
+    if(asp){ rec.push("Continue aspirin perioperatively in most stented patients unless bleeding risk is prohibitive."); }
+    if(clop || tica || pras){
+      rec.push("If P2Y12 interruption is needed: hold clopidogrel ~5 days, ticagrelor ~3 days, prasugrel ~7 days pre‑op; resume early post‑op when hemostasis is secure.");
+    }
+  } else {
+    if(asp){ rec.push("For secondary prevention without recent PCI, aspirin continuation depends on bleeding risk; discuss with surgeon/anesthesia."); }
+  }
+  return rec;
+}
+
+function manageAC(){
+  const ac = val('ac');
+  if(ac==='none') return [];
+  let rec = [];
+  rec.push("Plan interruption based on renal function and procedural bleeding risk; coordinate with anesthesia/surgeon.");
+  if(ac==='warfarin'){
+    rec.push("Warfarin: stop ~5 days pre‑op; check INR pre‑op. Bridge only for mechanical valves or very high thromboembolic risk.");
+  } else if(ac==='apixaban' || ac==='rivaroxaban' || ac==='edoxaban'){
+    rec.push("Factor Xa DOAC: hold 24–72h pre‑op depending on bleeding risk and renal function; no heparin bridging in most cases.");
+  } else if(ac==='dabigatran'){
+    rec.push("Dabigatran: hold 24–96h pre‑op depending on CrCl and bleeding risk; no bridging in most cases.");
+  }
+  rec.push("Restart post‑op when hemostasis is adequate; consider prophylactic dosing if high VTE risk and full dose is delayed.");
+  return rec;
+}
+
+function medsRec(){
+  const bb = val('med-bb');
+  const acearb = val('med-acearb');
+  const stat = val('med-statin');
+  const sglt2 = val('med-sglt2');
+  const met = val('med-metformin');
+  const su = val('med-sulfonyl');
+  const basal = val('med-basalins');
+  let rec = [];
+  if(bb){ rec.push("Continue beta‑blocker. Avoid initiating on day of surgery; if starting for a new indication, begin ≥7 days prior and titrate to HR/BP."); }
+  if(stat){ rec.push("Continue statin. Consider initiation if ASCVD indication exists."); }
+  if(acearb){ rec.push("If for hypertension only: consider holding morning of surgery to reduce intra‑op hypotension; continue if used for HFrEF where feasible."); }
+  if(sglt2){ rec.push("Hold SGLT2 inhibitor 3 days pre‑op to reduce risk of euglycemic DKA; restart when eating and clinically stable."); }
+  if(met){ rec.push("Hold metformin on morning of surgery (earlier if renal dysfunction/contrast use anticipated); restart when renal function and oral intake are adequate."); }
+  if(su){ rec.push("Hold sulfonylurea on day of surgery to avoid hypoglycemia."); }
+  if(basal){ rec.push("Give ~50–80% of usual basal insulin dose the evening before or morning of surgery; use insulin scale intra‑/post‑op per protocol."); }
+  if(!bb && !stat && !acearb && !sglt2 && !met && !su && !basal){
+    rec.push("Review chronic medications; ensure continuation of evidence‑based CV therapies where indicated.");
+  }
+  return rec;
+}
+
+function testingRec(){
+  const urg = val('urgency');
+  const surg = val('surgRisk');
+  const mets = parseFloat(val('mets')) || 0;
+  const sxDysp = val('sx-dyspnea');
+  const r = rcriScore();
+  let rec = [];
+
+  if(surg!=='low'){
+    rec.push("12‑lead ECG pre‑op is reasonable for patients with known CVD undergoing intermediate/high‑risk surgery.");
+  }
+
+  if(sxDysp){
+    rec.push("Transthoracic echocardiogram: indicated for new/worsening dyspnea or suspected HF/valvular disease.");
+  } else {
+    rec.push("Do not repeat echocardiogram purely by time interval if no change in clinical status.");
+  }
+
+  if(urg==='urgent-emergent'){
+    rec.push("Urgent/Emergent surgery: proceed with optimal peri‑op monitoring; reserve testing for cases where results would immediately change management.");
+  } else {
+    if(mets>=4){
+      rec.push("Adequate functional capacity (≥4 METs): routine stress testing is not indicated.");
+    } else {
+      if(surg!=='low' && r>=1){
+        rec.push("Poor/unknown functional capacity with elevated risk: consider non‑invasive stress testing if results will change management (revascularization, delay, or altering surgery/anesthesia).");
+      } else {
+        rec.push("Poor/unknown functional capacity but low overall risk: no stress testing; proceed with appropriate monitoring.");
+      }
+    }
+  }
+
+  if((surg!=='low') && (mets<4 || r>=1)){
+    rec.push("Consider pre‑op BNP/NT‑proBNP or troponin to refine risk in elevated‑risk patients with poor/unknown functional capacity.");
+  }
+
+  if(surg!=='low' && (r>=2 || mets<4)){
+    rec.push("Consider 24–48h postoperative troponin surveillance in high‑risk patients to detect myocardial injury after non‑cardiac surgery (MINS).");
+  }
+
+  rec.push("Check CBC, electrolytes, creatinine, glucose (and HbA1c if not recent), and coagulation profile when indicated.");
+
+  return rec;
+}
+
+function proceedRec(){
+  const active = val('acc-acs') || val('acc-decompHF') || val('acc-arr') || val('acc-valve');
+  const mets = parseFloat(val('mets')) || 0;
+  const surg = val('surgRisk');
+  const r = rcriScore();
+  let rec = [];
+  if(active){
+    rec.push("Active cardiac condition present → Defer deferrable surgery and treat the condition first.");
+    return rec;
+  }
+  if(mets>=4){
+    rec.push("Proceed with surgery is reasonable with standard monitoring and hemodynamic optimization.");
+  } else {
+    if(surg==='low' || r===0){
+      rec.push("Proceed with surgery with appropriate monitoring; no further cardiac testing is necessary.");
+    } else {
+      rec.push("Shared decision‑making: consider non‑invasive testing only if it will change management; otherwise proceed with enhanced monitoring.");
+    }
+  }
+  return rec;
+}
+
+function hemoRec(){
+  const surg = val('surgRisk');
+  let rec = [];
+  rec.push("Maintain hemodynamic stability: avoid tachycardia, hypotension, and hypoxia; treat promptly.");
+  if(surg!=='low'){
+    rec.push("Telemetry monitoring for 24–48h may be reasonable in patients with elevated cardiac risk.");
+  }
+  rec.push("VTE prophylaxis per procedure risk and patient factors; encourage early mobilization.");
+  return rec;
+}
+
+function run(){
+  const score = rcriScore();
+  document.getElementById('rcri').innerText = score;
+  document.getElementById('mace').innerText = maceEstimate(score);
+
+  // recompute DASI
+  const dasi = dasiCalc();
+  if(val('useDasi')==='yes'){
+    setVal('mets', dasi.mets.toFixed(1));
+  }
+
+  // Build output
+  let blocks = [];
+
+  // Summary
+  const summary = [];
+  summary.push(`<div class="section-title">Summary</div>`);
+  summary.push(`<div>Age ${val('age')} • ${val('urgency')} • Procedure: ${val('procedure')||'—'} • Surgical risk: ${val('surgRisk')}</div>`);
+  const active = val('acc-acs') || val('acc-decompHF') || val('acc-arr') || val('acc-valve');
+  summary.push(`<div class="${active?'bad':'ok'} small"><b>Active cardiac condition:</b> ${active?'PRESENT → address first':'None reported'}</div>`);
+  summary.push(`<div class="small"><b>RCRI:</b> ${score} (MACE ${maceEstimate(score)}). <b>METs:</b> ${val('mets')} ${val('useDasi')==='yes' ? '(DASI-derived)' : ''}. <b>DASI:</b> ${dasi.dasi.toFixed(1)}</div>`);
+  blocks.push(summary.join("\n"));
+
+  // Recommendations
+  const recs = [];
+  recs.push(`<div class="section-title">Testing & Investigations</div>`);
+  recs.push(`<ul>${testingRec().map(x=>`<li>${x}</li>`).join("")}</ul>`);
+  recs.push(`<div class="section-title">Perioperative Medication Management</div>`);
+  recs.push(`<ul>${medsRec().map(x=>`<li>${x}</li>`).join("")}</ul>`);
+  recs.push(`<div class="section-title">Antiplatelet/Anticoagulant Strategy</div>`);
+  recs.push(`<ul>${manageAntiplatelet().concat(manageAC()).map(x=>`<li>${x}</li>`).join("")}</ul>`);
+  recs.push(`<div class="section-title">Proceed/Deferral & Intra/Post‑op Management</div>`);
+  recs.push(`<ul>${proceedRec().concat(hemoRec()).map(x=>`<li>${x}</li>`).join("")}</ul>`);
+  blocks.push(recs.join("\n"));
+
+  const out = document.getElementById('output');
+  out.style.display = 'block';
+  out.innerHTML = blocks.join("\n");
+
+  // Build note for export
+  buildNote();
+  document.getElementById('noteCard').style.display='block';
+}
+
+function buildNote(){
+  const r = rcriScore();
+  const dasi = dasiCalc();
+  const lines = [];
+  lines.push("PERIOPERATIVE CARDIOVASCULAR EVALUATION NOTE (ACC/AHA 2024)");
+  lines.push("");
+  lines.push(`Patient: Age ${val('age')}`);
+  lines.push(`Surgery: ${val('procedure')||'—'} | Urgency: ${val('urgency')} | Surgical risk: ${val('surgRisk')}`);
+  lines.push("");
+  lines.push("Active cardiac conditions:");
+  lines.push(`- ACS/unstable angina or recent MI: ${val('acc-acs')?'Yes':'No'}`);
+  lines.push(`- Decompensated HF: ${val('acc-decompHF')?'Yes':'No'}`);
+  lines.push(`- Significant arrhythmia: ${val('acc-arr')?'Yes':'No'}`);
+  lines.push(`- Severe valvular disease: ${val('acc-valve')?'Yes':'No'}`);
+  lines.push("");
+  lines.push(`RCRI: ${r} (Estimated MACE ${maceEstimate(r)})`);
+  lines.push("RCRI factors present:");
+  if(val('r-ihd')) lines.push("  • Ischemic heart disease");
+  if(val('r-chf')) lines.push("  • History of heart failure");
+  if(val('r-cvd')) lines.push("  • History of stroke/TIA");
+  if(val('r-insulin')) lines.push("  • Diabetes on insulin");
+  if(val('r-cr2')) lines.push("  • Creatinine > 2.0 mg/dL");
+  if(val('r-highrisk')) lines.push("  • High-risk surgery");
+  if(!val('r-ihd') && !val('r-chf') && !val('r-cvd') && !val('r-insulin') && !val('r-cr2') && !val('r-highrisk')) lines.push("  • None");
+  lines.push("");
+  lines.push(`Functional capacity: METs ${val('mets')} ${val('useDasi')==='yes' ? '(DASI-derived)' : ''} | DASI ${dasi.dasi.toFixed(1)}`);
+  lines.push(`Symptoms: Angina ${val('sx-angina')?'Yes':'No'}; Dyspnea ${val('sx-dyspnea')?'Yes':'No'}; Syncope ${val('sx-syncope')?'Yes':'No'}`);
+  lines.push("");
+  lines.push("Testing & Investigations:");
+  testingRec().forEach(t=>lines.push(`- ${t}`));
+  lines.push("");
+  lines.push("Perioperative medication management:");
+  medsRec().forEach(t=>lines.push(`- ${t}`));
+  lines.push("");
+  lines.push("Antiplatelet/Anticoagulant strategy:");
+  manageAntiplatelet().concat(manageAC()).forEach(t=>lines.push(`- ${t}`));
+  lines.push("");
+  lines.push("Proceed/Deferral & Intra/Post-op management:");
+  proceedRec().concat(hemoRec()).forEach(t=>lines.push(`- ${t}`));
+  lines.push("");
+
+  document.getElementById('note').value = lines.join("\n");
+}
+
+function exportNote(){
+  buildNote();
+  const text = document.getElementById('note').value;
+  const blob = new Blob([text], {type: 'text/plain'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'Periop_CV_Eval_Note.txt';
+  document.body.appendChild(a);
+  a.click();
+  URL.revokeObjectURL(url);
+  a.remove();
+}
+
+function copyNote(){
+  buildNote();
+  const ta = document.getElementById('note');
+  ta.select();
+  document.execCommand('copy');
+}
+
+function resetAll(){
+  document.querySelectorAll("input").forEach(el=>{
+    if(el.type==="checkbox"){ el.checked=false; }
+    else if(el.type==="number"){ el.value = el.id==="mets" ? 4 : (el.id==="age" ? 70 : 0); }
+    else { el.value=""; }
+  });
+  document.getElementById("urgency").value="elective";
+  document.getElementById("surgRisk").value="intermediate";
+  document.getElementById("pci").value="none";
+  document.getElementById("ac").value="none";
+  document.getElementById("preset").value="";
+  document.getElementById("useDasi").value="no";
+  document.getElementById("output").style.display='none';
+  document.getElementById("noteCard").style.display='none';
+  dasiCalc();
+}
+</script>
+</body>
+</html>
