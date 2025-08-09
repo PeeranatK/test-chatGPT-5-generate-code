@@ -4,11 +4,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Perioperative CV Evaluation – ACC/AHA 2024 (with DASI, Presets, Export)</title>
+<title>Perioperative CV Evaluation – ACC/AHA 2024 (DASI, Specialty Presets, EN Note)</title>
 <style>
   body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 24px; line-height: 1.35; }
   h1, h2 { margin: 0.4em 0; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
   .card { border: 1px solid #ddd; border-radius: 8px; padding: 16px; background: #fff; }
   label { display:block; margin-top: 8px; font-weight:600; }
   input[type="number"], select, input[type="text"] { width:100%; padding:8px; border:1px solid #bbb; border-radius:6px; }
@@ -24,14 +24,14 @@
   .small { font-size: 0.9em; }
   .section-title { margin-top: 18px; font-weight: 700; border-bottom: 1px dashed #ccc; padding-bottom: 6px; }
   .two-col { display:grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  textarea { width:100%; min-height: 220px; padding:10px; border:1px solid #bbb; border-radius:6px; font-family: ui-monospace, Menlo, monospace; }
+  textarea { width:100%; min-height: 240px; padding:10px; border:1px solid #bbb; border-radius:6px; font-family: ui-monospace, Menlo, monospace; }
   footer { margin-top: 24px; color:#666; font-size: 0.85em; }
   ul { margin: 0.3em 0 0.6em 1.2em; }
 </style>
 </head>
 <body>
   <h1>Perioperative CV Evaluation – ACC/AHA 2024</h1>
-  <div class="muted">Decision support for non‑cardiac surgery. Incorporates DASI→METs, surgical risk presets, and exportable clinical note. Use clinical judgment.</div>
+  <div class="muted">DASI→METs, EMCrit risk presets (Low/Intermediate/High) + Very High, specialty-specific presets, and exportable English note. Use clinical judgment.</div>
 
   <div class="grid">
     <div class="card">
@@ -49,17 +49,72 @@
       <label>Surgery Profile Preset</label>
       <select id="preset" onchange="applyPreset()">
         <option value="">— Select preset —</option>
-        <option value="LC">Laparoscopic cholecystectomy (Intermediate)</option>
-        <option value="hernia">Inguinal hernia repair (Low)</option>
-        <option value="cataract">Cataract surgery (Low)</option>
-        <option value="endo">Endoscopy/colonoscopy (Low)</option>
-        <option value="breast">Breast surgery (Low)</option>
-        <option value="ortho">Total hip/knee arthroplasty (Intermediate)</option>
-        <option value="cea">Carotid endarterectomy (Intermediate)</option>
-        <option value="evAR">Endovascular AAA repair (Intermediate)</option>
-        <option value="intrathoracic">Major intrathoracic surgery (High)</option>
-        <option value="openAAA">Open abdominal aortic aneurysm repair (High)</option>
-        <option value="neuro">Intracranial neurosurgery (High)</option>
+        <optgroup label="General presets">
+          <option value="LC">Laparoscopic cholecystectomy (Intermediate)</option>
+          <option value="hernia">Inguinal hernia repair (Low)</option>
+          <option value="cataract">Cataract surgery (Low)</option>
+          <option value="endo">Endoscopy / Colonoscopy (Low)</option>
+          <option value="breast">Breast surgery (Low)</option>
+          <option value="ortho">Total hip/knee arthroplasty (Intermediate)</option>
+          <option value="cea">Carotid endarterectomy (Intermediate)</option>
+          <option value="evAR">Endovascular AAA repair (Intermediate)</option>
+          <option value="intrathoracic">Major intrathoracic surgery (High)</option>
+          <option value="openAAA">Open AAA repair (High)</option>
+          <option value="neuro">Intracranial neurosurgery (High)</option>
+        </optgroup>
+        <optgroup label="EMCrit – Low-risk (<1% MACE)">
+          <option value="emc_low_cataract">Cataract surgery (Low)</option>
+          <option value="emc_low_breastplastic">Breast/plastic surgery (Low)</option>
+          <option value="emc_low_endoscopic">Endoscopic (GI, minor ENT, minor urologic) (Low)</option>
+          <option value="emc_low_thyroid_minor">Thyroidectomy, minor gynecologic/orthopedic (Low)</option>
+        </optgroup>
+        <optgroup label="EMCrit – Intermediate-risk (1–5% MACE)">
+          <option value="emc_int_cea">Carotid endarterectomy (Intermediate)</option>
+          <option value="emc_int_periph_angio">Peripheral artery angioplasty (Intermediate)</option>
+          <option value="emc_int_hn_nonmajor">Head & neck (non‑major) (Intermediate)</option>
+          <option value="emc_int_nonmajor_intra">Non‑major intraperitoneal/thoracic (Intermediate)</option>
+          <option value="emc_int_major_ortho_neuro_gyn_urol">Major orthopedic/neurologic/gynecologic/urologic (Intermediate)</option>
+          <option value="emc_int_renal_tx">Renal transplant (Intermediate)</option>
+        </optgroup>
+        <optgroup label="EMCrit – High-risk (>5% MACE)">
+          <option value="emc_high_vascular_nonCEA">Vascular surgery (excluding CEA) (High)</option>
+          <option value="emc_high_major_intra">Major intraperitoneal/thoracic (e.g., Whipple, hepatectomy, transplant, pneumonectomy) (High)</option>
+        </optgroup>
+        <optgroup label="Very High-risk">
+          <option value="vh_open_aortic">Open aortic surgery (thoracoabdominal/arch) (Very High)</option>
+          <option value="vh_tx_heart">Heart transplant (Very High)</option>
+          <option value="vh_tx_lung">Lung transplant (Very High)</option>
+          <option value="vh_tx_liver">Liver transplant (Very High)</option>
+        </optgroup>
+        <optgroup label="Specialty presets – Head & Neck / Neuro / Spine">
+          <option value="hn_major_freeflap">Major head & neck oncologic with free flap (High)</option>
+          <option value="neuro_posterior_fossa">Posterior fossa/complex intracranial tumor resection (High)</option>
+          <option value="spine_complex_deformity">Complex spine deformity correction (High)</option>
+        </optgroup>
+        <optgroup label="Specialty presets – Thoracic">
+          <option value="thoracic_esophagectomy">Esophagectomy (High)</option>
+          <option value="thoracic_lobectomy">Pulmonary lobectomy (High)</option>
+          <option value="thoracic_pneumonectomy">Pneumonectomy (High)</option>
+        </optgroup>
+        <optgroup label="Specialty presets – Hepatopancreatobiliary (HPB)">
+          <option value="hpb_whipple">Pancreaticoduodenectomy (Whipple) (High)</option>
+          <option value="hpb_major_hepatectomy">Major hepatectomy (≥3 segments) (High)</option>
+          <option value="hpb_hipec">Cytoreductive surgery with HIPEC (Very High)</option>
+        </optgroup>
+        <optgroup label="Specialty presets – Vascular">
+          <option value="vas_infrainguinal_bypass">Infrainguinal bypass (High)</option>
+          <option value="vas_tcaaa_open">Open thoracoabdominal aortic aneurysm repair (Very High)</option>
+        </optgroup>
+        <optgroup label="Specialty presets – Urology / Gyn Onc / Endocrine">
+          <option value="uro_radical_cystectomy">Radical cystectomy (High)</option>
+          <option value="uro_radical_prostatectomy">Radical prostatectomy (Intermediate)</option>
+          <option value="gyn_onc_radical_hysterectomy">Radical hysterectomy/ovarian cytoreduction (High)</option>
+          <option value="endo_pheochromocytoma">Adrenalectomy for pheochromocytoma (Intermediate)</option>
+        </optgroup>
+        <optgroup label="Specialty presets – Orthopedics">
+          <option value="ortho_revision_hip">Major revision THA with expected high blood loss (High)</option>
+          <option value="ortho_tka_hip_primary">Primary TKA/THA (Intermediate)</option>
+        </optgroup>
       </select>
 
       <label>Surgery Category (cardiac risk)</label>
@@ -67,6 +122,7 @@
         <option value="low">Low (&lt;1%)</option>
         <option value="intermediate" selected>Intermediate (1–5%)</option>
         <option value="high">High (&gt;5%)</option>
+        <option value="veryhigh">Very High (&gt;10% approx.)</option>
       </select>
 
       <label>Procedure Type (free text)</label>
@@ -96,7 +152,7 @@
 
     <div class="card">
       <h2>Functional Capacity</h2>
-      <div class="small muted">You may enter METs directly or compute from DASI below.</div>
+      <div class="small muted">Enter METs directly or compute from DASI below.</div>
       <div class="row">
         <div style="flex:1">
           <label>Estimated METs</label>
@@ -196,7 +252,7 @@
   </div>
 
   <footer>
-    Mirrors key aspects of ACC/AHA 2024 perioperative guidance: active conditions, surgical risk, RCRI, functional capacity (with DASI), targeted testing, and med management. Use with clinical judgment.
+    Presets include EMCrit risk categories plus specialty-specific examples. Map to the closest risk tier for the clinical context.
   </footer>
 
 <script>
@@ -205,6 +261,7 @@ function setVal(id,v){ const el=document.getElementById(id); if(el){ if(el.type=
 
 function applyPreset(){
   const p = val('preset');
+  // General presets (previous)
   if(p==='LC'){ setVal('procedure','Laparoscopic cholecystectomy'); setVal('surgRisk','intermediate'); }
   else if(p==='hernia'){ setVal('procedure','Inguinal hernia repair'); setVal('surgRisk','low'); }
   else if(p==='cataract'){ setVal('procedure','Cataract surgery'); setVal('surgRisk','low'); }
@@ -216,6 +273,59 @@ function applyPreset(){
   else if(p==='intrathoracic'){ setVal('procedure','Major intrathoracic surgery'); setVal('surgRisk','high'); }
   else if(p==='openAAA'){ setVal('procedure','Open AAA repair'); setVal('surgRisk','high'); }
   else if(p==='neuro'){ setVal('procedure','Intracranial neurosurgery'); setVal('surgRisk','high'); }
+
+  // EMCrit – Low
+  else if(p==='emc_low_cataract'){ setVal('procedure','Cataract surgery'); setVal('surgRisk','low'); }
+  else if(p==='emc_low_breastplastic'){ setVal('procedure','Breast / plastic surgery'); setVal('surgRisk','low'); }
+  else if(p==='emc_low_endoscopic'){ setVal('procedure','Endoscopic (GI, minor ENT, minor urologic)'); setVal('surgRisk','low'); }
+  else if(p==='emc_low_thyroid_minor'){ setVal('procedure','Thyroidectomy; minor gynecologic/orthopedic'); setVal('surgRisk','low'); }
+
+  // EMCrit – Intermediate
+  else if(p==='emc_int_cea'){ setVal('procedure','Carotid endarterectomy'); setVal('surgRisk','intermediate'); }
+  else if(p==='emc_int_periph_angio'){ setVal('procedure','Peripheral artery angioplasty'); setVal('surgRisk','intermediate'); }
+  else if(p==='emc_int_hn_nonmajor'){ setVal('procedure','Head & neck (non‑major)'); setVal('surgRisk','intermediate'); }
+  else if(p==='emc_int_nonmajor_intra'){ setVal('procedure','Non‑major intraperitoneal/thoracic'); setVal('surgRisk','intermediate'); }
+  else if(p==='emc_int_major_ortho_neuro_gyn_urol'){ setVal('procedure','Major orthopedic/neurologic/gynecologic/urologic'); setVal('surgRisk','intermediate'); }
+  else if(p==='emc_int_renal_tx'){ setVal('procedure','Renal transplant'); setVal('surgRisk','intermediate'); }
+
+  // EMCrit – High
+  else if(p==='emc_high_vascular_nonCEA'){ setVal('procedure','Vascular surgery (excluding CEA)'); setVal('surgRisk','high'); }
+  else if(p==='emc_high_major_intra'){ setVal('procedure','Major intraperitoneal/thoracic (e.g., Whipple, hepatectomy, transplant, pneumonectomy)'); setVal('surgRisk','high'); }
+
+  // Very High
+  else if(p==='vh_open_aortic'){ setVal('procedure','Open aortic surgery (thoracoabdominal/arch)'); setVal('surgRisk','veryhigh'); }
+  else if(p==='vh_tx_heart'){ setVal('procedure','Heart transplant'); setVal('surgRisk','veryhigh'); }
+  else if(p==='vh_tx_lung'){ setVal('procedure','Lung transplant'); setVal('surgRisk','veryhigh'); }
+  else if(p==='vh_tx_liver'){ setVal('procedure','Liver transplant'); setVal('surgRisk','veryhigh'); }
+
+  // Specialty – Head & Neck / Neuro / Spine
+  else if(p==='hn_major_freeflap'){ setVal('procedure','Major head & neck oncologic with free flap'); setVal('surgRisk','high'); }
+  else if(p==='neuro_posterior_fossa'){ setVal('procedure','Posterior fossa/complex intracranial tumor resection'); setVal('surgRisk','high'); }
+  else if(p==='spine_complex_deformity'){ setVal('procedure','Complex spine deformity correction'); setVal('surgRisk','high'); }
+
+  // Specialty – Thoracic
+  else if(p==='thoracic_esophagectomy'){ setVal('procedure','Esophagectomy'); setVal('surgRisk','high'); }
+  else if(p==='thoracic_lobectomy'){ setVal('procedure','Pulmonary lobectomy'); setVal('surgRisk','high'); }
+  else if(p==='thoracic_pneumonectomy'){ setVal('procedure','Pneumonectomy'); setVal('surgRisk','high'); }
+
+  // Specialty – HPB
+  else if(p==='hpb_whipple'){ setVal('procedure','Pancreaticoduodenectomy (Whipple)'); setVal('surgRisk','high'); }
+  else if(p==='hpb_major_hepatectomy'){ setVal('procedure','Major hepatectomy (≥3 segments)'); setVal('surgRisk','high'); }
+  else if(p==='hpb_hipec'){ setVal('procedure','Cytoreductive surgery with HIPEC'); setVal('surgRisk','veryhigh'); }
+
+  // Specialty – Vascular
+  else if(p==='vas_infrainguinal_bypass'){ setVal('procedure','Infrainguinal bypass'); setVal('surgRisk','high'); }
+  else if(p==='vas_tcaaa_open'){ setVal('procedure','Open thoracoabdominal aortic aneurysm repair'); setVal('surgRisk','veryhigh'); }
+
+  // Specialty – Urology / Gyn Onc / Endocrine
+  else if(p==='uro_radical_cystectomy'){ setVal('procedure','Radical cystectomy'); setVal('surgRisk','high'); }
+  else if(p==='uro_radical_prostatectomy'){ setVal('procedure','Radical prostatectomy'); setVal('surgRisk','intermediate'); }
+  else if(p==='gyn_onc_radical_hysterectomy'){ setVal('procedure','Radical hysterectomy/ovarian cytoreduction'); setVal('surgRisk','high'); }
+  else if(p==='endo_pheochromocytoma'){ setVal('procedure','Adrenalectomy for pheochromocytoma'); setVal('surgRisk','intermediate'); }
+
+  // Specialty – Ortho
+  else if(p==='ortho_revision_hip'){ setVal('procedure','Major revision THA with expected high blood loss'); setVal('surgRisk','high'); }
+  else if(p==='ortho_tka_hip_primary'){ setVal('procedure','Primary TKA/THA'); setVal('surgRisk','intermediate'); }
 }
 
 function rcriScore(){
@@ -351,10 +461,10 @@ function testingRec(){
     if(mets>=4){
       rec.push("Adequate functional capacity (≥4 METs): routine stress testing is not indicated.");
     } else {
-      if(surg!=='low' && r>=1){
-        rec.push("Poor/unknown functional capacity with elevated risk: consider non‑invasive stress testing if results will change management (revascularization, delay, or altering surgery/anesthesia).");
-      } else {
+      if(surg==='low' && r===0){
         rec.push("Poor/unknown functional capacity but low overall risk: no stress testing; proceed with appropriate monitoring.");
+      } else {
+        rec.push("Poor/unknown functional capacity with elevated risk: consider non‑invasive stress testing if results will change management (revascularization, delay, or altering surgery/anesthesia).");
       }
     }
   }
@@ -410,16 +520,12 @@ function run(){
   document.getElementById('rcri').innerText = score;
   document.getElementById('mace').innerText = maceEstimate(score);
 
-  // recompute DASI
   const dasi = dasiCalc();
   if(val('useDasi')==='yes'){
     setVal('mets', dasi.mets.toFixed(1));
   }
 
-  // Build output
   let blocks = [];
-
-  // Summary
   const summary = [];
   summary.push(`<div class="section-title">Summary</div>`);
   summary.push(`<div>Age ${val('age')} • ${val('urgency')} • Procedure: ${val('procedure')||'—'} • Surgical risk: ${val('surgRisk')}</div>`);
@@ -428,7 +534,6 @@ function run(){
   summary.push(`<div class="small"><b>RCRI:</b> ${score} (MACE ${maceEstimate(score)}). <b>METs:</b> ${val('mets')} ${val('useDasi')==='yes' ? '(DASI-derived)' : ''}. <b>DASI:</b> ${dasi.dasi.toFixed(1)}</div>`);
   blocks.push(summary.join("\n"));
 
-  // Recommendations
   const recs = [];
   recs.push(`<div class="section-title">Testing & Investigations</div>`);
   recs.push(`<ul>${testingRec().map(x=>`<li>${x}</li>`).join("")}</ul>`);
@@ -444,7 +549,6 @@ function run(){
   out.style.display = 'block';
   out.innerHTML = blocks.join("\n");
 
-  // Build note for export
   buildNote();
   document.getElementById('noteCard').style.display='block';
 }
@@ -496,11 +600,12 @@ function buildNote(){
 function exportNote(){
   buildNote();
   const text = document.getElementById('note').value;
+  const filename = 'Periop_CV_Eval_Note.txt';
   const blob = new Blob([text], {type: 'text/plain'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'Periop_CV_Eval_Note.txt';
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   URL.revokeObjectURL(url);
